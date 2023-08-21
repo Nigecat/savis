@@ -1,0 +1,10 @@
+[package]
+name = "savis"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+nannou = { package = "nannou_oop", git = "https://github.com/Nigecat/nannou-oop" }
+
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
