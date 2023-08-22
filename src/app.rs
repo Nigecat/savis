@@ -1,18 +1,18 @@
 use crate::utils::has_adjacent;
 use crate::Chronicle;
 use nannou::prelude::rgb::Srgb;
-use nannou::prelude::{Point2, GREEN, RED, WHITE};
+use nannou::prelude::{Point2, BLACK, GREEN, LIGHTGRAY, PURPLE, RED, WHITE};
 
 const NODE_SIZE: f32 = 25.0;
 const EDGE_WIDTH: f32 = 2.0;
 
 pub struct App {
     chronicle: Chronicle,
-    delay: usize,
+    delay: f32,
 }
 
 impl App {
-    pub fn new(chronicle: Chronicle, delay: usize) -> Self {
+    pub fn new(chronicle: Chronicle, delay: f32) -> Self {
         App { chronicle, delay }
     }
 }
@@ -34,30 +34,57 @@ impl nannou::Model for App {
         // todo should warn! about missing position data
 
         // Current iteration
-        let n = (app.time / (self.delay as f32 / 1000.0)).floor() as usize;
+        let n = (app.time / (self.delay / 1000.0)).floor() as usize;
         let k = match n < self.chronicle.history.len() {
             true => n,
             false => self.chronicle.history.len() - 1,
         };
         let state = &self.chronicle.history[k];
+
         let last_good = self.chronicle.history[..=k]
             .iter()
             .rev()
             .find(|state| state.used)
             .unwrap_or(state);
 
+        if last_good.route != state.route {
+            println!("{last_good:?} {state:?}");
+        }
+
         let draw = app.draw();
+
+        // ---------- Draw Stats ----------
+        draw.text(&format!(
+            "Iteration: {}/{}",
+            k + 1,
+            self.chronicle.history.len()
+        ))
+        .x_y(x(-0.7), y(0.9))
+        .no_line_wrap()
+        .font_size(20)
+        .color(WHITE);
+
+        draw.text(&format!("Temperature: {}", state.temperature))
+            .x_y(x(-0.7), y(0.8))
+            .no_line_wrap()
+            .font_size(20)
+            .color(WHITE);
+
+        draw.text(&format!("Energy: {}", state.energy))
+            .x_y(x(-0.7), y(0.7))
+            .font_size(20)
+            .color(WHITE);
 
         // ---------- Draw Edges ----------
         for (u, v) in &self.chronicle.edges {
             let u_pos = self.chronicle.position(u);
             let v_pos = self.chronicle.position(v);
 
-            let mut color = WHITE;
+            let mut color = LIGHTGRAY;
 
             // If this edge is in the current state
             if has_adjacent(&state.route, u, v) {
-                color = RED; // currently searching
+                color = PURPLE; // currently searching
             }
 
             // If the edge is in the last good state
@@ -78,7 +105,16 @@ impl nannou::Model for App {
             let pos = self.chronicle.position(node);
 
             draw.ellipse()
-                .color(WHITE)
+                .color(match node == &state.route[0] {
+                    true => BLACK,
+                    false => match node == &last_good.route[last_good.route.len() - 1] {
+                        true => RED,
+                        false => match state.route.contains(node) {
+                            true => GREEN,
+                            false => WHITE,
+                        },
+                    },
+                })
                 .width(NODE_SIZE)
                 .height(NODE_SIZE)
                 .x_y(x(pos.0), y(pos.1));

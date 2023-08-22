@@ -26,7 +26,7 @@ impl From<String> for Property {
 }
 
 /// The system state at a given point in time
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct State {
     pub temperature: f32,
     pub energy: f32,

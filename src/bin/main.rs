@@ -8,14 +8,15 @@ struct Cli {
     /// The path to the JSON data file
     data: PathBuf,
     /// The time to wait between updates, in milliseconds
-    #[clap(long, short, default_value = "500")]
-    delay: usize,
+    #[clap(long, short, default_value = "1")]
+    delay: f32,
 }
 
 fn main() {
     let args = Cli::parse();
     let file = fs::File::open(args.data).unwrap();
     let data: Chronicle = serde_json::from_reader(io::BufReader::new(file)).unwrap();
+    println!("Loaded {} data points!", data.history.len());
     nannou::run(App::new(data, args.delay), |builder| builder);
 
     // let chronicle = Chronicle {
