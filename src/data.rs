@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -38,12 +39,14 @@ pub struct State {
 }
 
 /// The system state over the runtime of the application
+#[serde_as]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Chronicle {
     pub history: Vec<State>,
     pub nodes: Vec<Node>,
     pub edges: Vec<(Node, Node)>,
     /// The node positions, mapped to a `[-1, 1]` coordinate plane with `(0, 0)` at the center of the screen
+    #[serde_as(as = "Vec<(_, _)>")]
     pub positions: HashMap<Node, (f32, f32)>,
 }
 

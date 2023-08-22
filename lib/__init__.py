@@ -20,14 +20,16 @@ class State:
     # properties: dict[Node, list[Property]]
 
 class Chronicle(object):
-    nodes: list[Node]    
     history: list[State]
+    nodes: list[Node]    
     edges: list[tuple[Node, Node]]
+    positions: dict[Node, tuple[float, float]]
 
-    def __init__(self, nodes: list[Node], edges: list[tuple[Node, Node]]):
-        self.nodes = nodes
-        self.edges = edges
+    def __init__(self, nodes: list[str], edges: list[tuple[str, str]], positions: dict[str, tuple[float, float]]):
         self.history = []
+        self.nodes = [Node(s) for s in nodes]
+        self.edges = [(Node(u), Node(v)) for u, v in edges]
+        self.positions = { Node(node): position for node, position in positions.items() }
 
     def emit(self, state: State):
         self.history.append(state)
@@ -36,6 +38,7 @@ class Chronicle(object):
         # json.dumps can't serialize dataclasses
         self.nodes = [node.__dict__ for node in self.nodes] # type: ignore
         self.edges = [(a.__dict__, b.__dict__) for a, b in self.edges] # type: ignore
+        self.positions = [[node.__dict__, position] for node, position in self.positions.items()] # type: ignore
         for i, h in enumerate(self.history):
             h.route = [node.__dict__ for node in h.route] # type: ignore
             self.history[i] = h
